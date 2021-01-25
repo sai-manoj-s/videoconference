@@ -13,7 +13,7 @@ var currentPeer;
 
 const myVideo = document.createElement('video')
 myVideo.muted = true;
-const peers = {}
+var peers = []
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
@@ -21,22 +21,25 @@ navigator.mediaDevices.getUserMedia({
   myVideoStream = stream;
   addVideoStream(myVideo, stream)
   
-  myPeer.on('call', call => {
-   
+  myPeer.on('calls', call => {
+    console.log(test)
+    currentPeer=call.peerConnection
+    console.log(currentPeer)
     call.answer(stream)
-    currentPeer= call.peerConnection
-      console.log(currentPeer)
-   
+ 
     const video = document.createElement('video')
-    call.on('stream', userVideoStream => {
-     
+    call.on('stream', function(userVideoStream)  {
+     if(!peers.includes(call.peer)){
       addVideoStream(video, userVideoStream)
       console.log("test")
+      currentPeer=call.peerConnection
+      peers.push(call.peer)
+     }
+     
       
      
     })
-    currentPeer= call.peerConnection
-    console.log(currentPeer)
+    
   })
   
 
@@ -69,14 +72,19 @@ myPeer.on('open', id => {
 })
 
 function connectToNewUser(userId, stream) {
-  const call = myPeer.call(userId, stream)
+    call = myPeer.call(userId, stream)
+    currentPeer=call.peerConnection
+    console.log(currentPeer)
+    call.answer(stream)
  
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
-    console.log("test")
-    addVideoStream(video, userVideoStream)
-    currentPeer= call.peerConnection
-    console.log(currentPeer)
+    if(!peers.includes(call.peer)){
+      addVideoStream(video, userVideoStream)
+      console.log("test")
+      currentPeer=call.peerConnection
+      peers.push(call.peer)
+     }
     
   })
   call.on('close', () => {
@@ -93,6 +101,7 @@ function addVideoStream(video, stream) {
   })
   videoGrid.append(video)
 }
+console.log(peers)
 
 const shareScreen=()=> {
   navigator.mediaDevices.getDisplayMedia({
@@ -105,91 +114,17 @@ const shareScreen=()=> {
     }
   }).then(stream => {
 
-
-
-    myVideoStream = stream;
-    addVideoStream(myVideo, stream)
-    
-    myPeer.on('call', call => {
-     
-      call.answer(stream)
-      currentPeer= call.peerConnection
-        console.log(currentPeer)
-     
-      const video = document.createElement('video')
-      call.on('stream', userVideoStream => {
-        addVideoStream(video, userVideoStream)
-        console.log("test")
-        
-       
-      })
-    })
+  
     const screenTrack = stream.getVideoTracks()[0];
-  
-  
-  
-    socket.on('user-connected', userId => {
-      connectToNewUser(userId, stream)
-    })
-
-    screenTrack.onended = function() {
+     console.log(myVideoStream.getVideoTracks()[0])
     
-      socket.on('user-disconnected', userId => {
-        if (peers[userId]) peers[userId].close()
-      })
-      console.log("close")
-      navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      }).then(stream => {
-        myVideoStream = stream;
-        addVideoStream(myVideo, stream)
-        
-        myPeer.on('call', call => {
-         
-          call.answer(stream)
-          currentPeer= call.peerConnection
-            console.log(currentPeer)
-         
-          const video = document.createElement('video')
-          call.on('stream', userVideoStream => {
-           
-            addVideoStream(video, userVideoStream)
-            console.log("test")
-            
-           
-          })
-          currentPeer= call.peerConnection
-          console.log(currentPeer)
-        })
-        
-      
-      
-      
-        socket.on('user-connected', userId => {
-          connectToNewUser(userId, stream)
-        })
-       
-        
-      })
-      
-    }
+     myVideoStream=stream
+     console.log(myVideoStream.getVideoTracks()[0])
+    
    
- 
-  
-    //   const screenTrack = stream.getVideoTracks()[0];
-     
-      
-    //   let senders = currentPeer.getSenders().find(function(s){
-    //     return s.track.kind = screenTrack.kind
-    //   })
 
-    //  senders.replaceTrack(screenTrack);
-    //  console.log(screenTrack)
-
-    //   screenTrack.onended = function() {
-    //       senders.current.find(sender => sender.track.kind === "video").replaceTrack(userStream.current.getTracks()[1]);
-    //   }
+      screenTrack.onended = function() {
+      }
   
   }) .catch((err)=>{
     console.log(err)
