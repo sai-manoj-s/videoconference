@@ -30,7 +30,9 @@ navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
+  console.log(user)
   socket.emit('addlist',user);
+  console.log(user+"added")
   myVideoStream = stream;
   addVideoStream(myVideo, myVideoStream)
 
