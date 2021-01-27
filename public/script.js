@@ -1,3 +1,4 @@
+
 const socket = io('/')
 const videoGrid = document.getElementById('video-grid')
 const myPeer = new Peer(undefined, {
@@ -5,88 +6,92 @@ const myPeer = new Peer(undefined, {
   host: '/',
   port: '443'
 })
-let myVideoStream;
-var senders;
-var currentPeer;
-
-
-
+var myVideoStream;
 const myVideo = document.createElement('video')
 myVideo.muted = true;
-var peers = []
+const peers = {}
+
+
+function getParameterByName(name, url = window.location.href) {
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g,));
+}
+var user = getParameterByName('uname')
+
+
+
+
+
 navigator.mediaDevices.getUserMedia({
   video: true,
   audio: true
 }).then(stream => {
+  socket.emit('addlist',user);
   myVideoStream = stream;
-  addVideoStream(myVideo, stream)
-  
-  myPeer.on('calls', call => {
-    console.log(test)
-    currentPeer=call.peerConnection
-    console.log(currentPeer)
-    call.answer(stream)
- 
+  addVideoStream(myVideo, myVideoStream)
+
+
+  myPeer.on('call', call => {
+    call.answer(myVideoStream)
     const video = document.createElement('video')
-    call.on('stream', function(userVideoStream)  {
-     if(!peers.includes(call.peer)){
+    call.on('stream', userVideoStream => {
       addVideoStream(video, userVideoStream)
-      console.log("test")
-      currentPeer=call.peerConnection
-      peers.push(call.peer)
-     }
-     
-      
-     
     })
-    
   })
-  
-
-
 
   socket.on('user-connected', userId => {
-    connectToNewUser(userId, stream)
+    
+    connectToNewUser(userId, myVideoStream)
+    
+    
   })
-  // input value
+
   let text = $("input");
-  // when press enter send message
+
   $('html').keydown(function (e) {
     if (e.which == 13 && text.val().length !== 0) {
-      socket.emit('message', text.val());
+      socket.emit('message',user+" :- \n"+ text.val());
       text.val('')
     }
   });
+ 
   socket.on("createMessage", message => {
-    $("ul").append(`<li class="message"><b>user</b><br/>${message}</li>`);
+    var uname = message.split(":-")
+    $(".messages").append(`<li class="message"><b>${uname[0]}:-<b></li>`);
+    $(".messages").append(`<li class="message">&nbsp&nbsp&nbsp${uname[1]}</li>`);
     scrollToBottom()
   })
+ 
+ 
 })
+
+
 
 socket.on('user-disconnected', userId => {
   if (peers[userId]) peers[userId].close()
 })
 
 myPeer.on('open', id => {
+
   socket.emit('join-room', ROOM_ID, id)
+  
 })
 
+
+
 function connectToNewUser(userId, stream) {
-    call = myPeer.call(userId, stream)
-    currentPeer=call.peerConnection
-    console.log(currentPeer)
-    call.answer(stream)
  
+  const call = myPeer.call(userId, stream)
   const video = document.createElement('video')
   call.on('stream', userVideoStream => {
-    if(!peers.includes(call.peer)){
-      addVideoStream(video, userVideoStream)
-      console.log("test")
-      currentPeer=call.peerConnection
-      peers.push(call.peer)
-     }
+    addVideoStream(video, userVideoStream)
     
   })
+ 
   call.on('close', () => {
     video.remove()
   })
@@ -94,14 +99,27 @@ function connectToNewUser(userId, stream) {
   peers[userId] = call
 }
 
+
+
 function addVideoStream(video, stream) {
   video.srcObject = stream
+  video.requestFullscreen().then(()=>{
+    console.log('full-screen')
+  })
   video.addEventListener('loadedmetadata', () => {
     video.play()
+    
+  })
+  video.addEventListener('click', () => {
+    video.webkitRequestFullScreen();           
+    video.style.height = screen.height;
+    video.style.width = screen.width;
+    video.controls=false
+    
   })
   videoGrid.append(video)
 }
-console.log(peers)
+
 
 const shareScreen=()=> {
   navigator.mediaDevices.getDisplayMedia({
@@ -113,16 +131,16 @@ const shareScreen=()=> {
       noiseSupression:true
     }
   }).then(stream => {
-
-  
+    myVideoStream=stream
+  console.log(myVideoStream.getVideoTracks()[0])
     const screenTrack = stream.getVideoTracks()[0];
-     console.log(myVideoStream.getVideoTracks()[0])
-    
-     myVideoStream=stream
-     console.log(myVideoStream.getVideoTracks()[0])
-    
+    console.log(currentPeer.getSenders())
+     let sender = currentPeer.getSenders().find(function(s){
+       return s.track.kind == videoTrack.kind
+     })
+     console.log(sender)
    
-
+     sender.replaceTrack(screenTrack)
       screenTrack.onended = function() {
       }
   
@@ -130,6 +148,8 @@ const shareScreen=()=> {
     console.log(err)
   })
 }
+
+
 
 const scrollToBottom = () => {
   var d = $('.main__chat_window');
@@ -191,3 +211,40 @@ const setPlayVideo = () => {
   `
   document.querySelector('.main__video_button').innerHTML = html;
 }
+
+const showParticipants=()=>{
+  var x = document.getElementById("participants");
+  //var y = document.getElementById("chats");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+ //   y.style.display="none"
+  } else {
+    x.style.display = "none";
+    //y.style.display="block"
+  }
+
+  
+
+  $.get( '/list', function(data) {
+    console.log(data)
+   
+    ul =  document.getElementById('lists')
+
+    ul.remove()
+    ul = document.createElement('ul');
+    ul.setAttribute("id", "lists");
+    document.getElementById('plist').appendChild(ul);
+    data.forEach(function (item) {
+      console.log(item)
+      let li = document.createElement('li');
+      ul.appendChild(li);
+  
+      li.innerHTML += item;
+  });
+  });
+
+}
+
+
+
+  

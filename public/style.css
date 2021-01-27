@@ -84,6 +84,7 @@
 .main__message_container {
     padding: 22px 12px;
     display: flex;
+   
 }
 
 .main__message_container input {
@@ -101,3 +102,9 @@
     color: #CC3B33;
 }
 
+video::-webkit-media-controls {
+    display:none !important;
+  }
+li{
+    color: white;
+}
