@@ -42,7 +42,7 @@ navigator.mediaDevices.getUserMedia({
     ul = document.createElement('ul');
     ul.setAttribute("id", "lists");
     document.getElementById('plist').appendChild(ul);
-    data.forEach(function (item) {
+    userslist.forEach(function (item) {
       console.log(item)
       let li = document.createElement('li');
       ul.appendChild(li);
