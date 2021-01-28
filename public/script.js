@@ -35,6 +35,22 @@ navigator.mediaDevices.getUserMedia({
 
   myVideoStream = stream;
   addVideoStream(myVideo, myVideoStream)
+   socket.on('userlist',(userslist)=>{
+    ul =  document.getElementById('lists')
+
+    ul.remove()
+    ul = document.createElement('ul');
+    ul.setAttribute("id", "lists");
+    document.getElementById('plist').appendChild(ul);
+    data.forEach(function (item) {
+      console.log(item)
+      let li = document.createElement('li');
+      ul.appendChild(li);
+  
+      li.innerHTML += item;
+  })
+});
+
  
 
   myPeer.on('call', call => {
@@ -224,22 +240,7 @@ const showParticipants=()=>{
     x.style.display = "none";
     //y.style.display="block"
   }
-   socket.on('userlist',(userslist)=>{
-    ul =  document.getElementById('lists')
-
-    ul.remove()
-    ul = document.createElement('ul');
-    ul.setAttribute("id", "lists");
-    document.getElementById('plist').appendChild(ul);
-    data.forEach(function (item) {
-      console.log(item)
-      let li = document.createElement('li');
-      ul.appendChild(li);
   
-      li.innerHTML += item;
-  })
-});
-
   
 
 //   $.get( '/list', function(data) {
