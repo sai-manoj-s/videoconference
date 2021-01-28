@@ -31,11 +31,11 @@ navigator.mediaDevices.getUserMedia({
   audio: true
 }).then(stream => {
   console.log(user)
-  socket.emit('addlist',user);
+ 
   console.log(user+"added")
   myVideoStream = stream;
   addVideoStream(myVideo, myVideoStream)
-
+   socket.emit('addlist',user);
 
   myPeer.on('call', call => {
     call.answer(myVideoStream)
@@ -224,12 +224,7 @@ const showParticipants=()=>{
     x.style.display = "none";
     //y.style.display="block"
   }
-
-  
-
-  $.get( '/list', function(data) {
-    console.log(data)
-   
+   socket.on('userlist',(userslist)=>{
     ul =  document.getElementById('lists')
 
     ul.remove()
@@ -242,8 +237,28 @@ const showParticipants=()=>{
       ul.appendChild(li);
   
       li.innerHTML += item;
-  });
-  });
+  })
+});
+
+  
+
+//   $.get( '/list', function(data) {
+//     console.log(data)
+   
+//     ul =  document.getElementById('lists')
+
+//     ul.remove()
+//     ul = document.createElement('ul');
+//     ul.setAttribute("id", "lists");
+//     document.getElementById('plist').appendChild(ul);
+//     data.forEach(function (item) {
+//       console.log(item)
+//       let li = document.createElement('li');
+//       ul.appendChild(li);
+  
+//       li.innerHTML += item;
+//   });
+//   });
 
 }
 
