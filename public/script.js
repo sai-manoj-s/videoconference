@@ -31,7 +31,7 @@ navigator.mediaDevices.getUserMedia({
   audio: true
 }).then(stream => {
 
- //  socket.emit('addlist',user);
+   socket.emit('addlist',user);
 
   myVideoStream = stream;
   addVideoStream(myVideo, myVideoStream)
@@ -224,21 +224,21 @@ const showParticipants=()=>{
     x.style.display = "none";
     //y.style.display="block"
   }
-//    socket.on('userlist',(userslist)=>{
-//     ul =  document.getElementById('lists')
+   socket.on('userlist',(userslist)=>{
+    ul =  document.getElementById('lists')
 
-//     ul.remove()
-//     ul = document.createElement('ul');
-//     ul.setAttribute("id", "lists");
-//     document.getElementById('plist').appendChild(ul);
-//     data.forEach(function (item) {
-//       console.log(item)
-//       let li = document.createElement('li');
-//       ul.appendChild(li);
+    ul.remove()
+    ul = document.createElement('ul');
+    ul.setAttribute("id", "lists");
+    document.getElementById('plist').appendChild(ul);
+    data.forEach(function (item) {
+      console.log(item)
+      let li = document.createElement('li');
+      ul.appendChild(li);
   
-//       li.innerHTML += item;
-//   })
-// });
+      li.innerHTML += item;
+  })
+});
 
   
 
