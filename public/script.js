@@ -31,11 +31,11 @@ navigator.mediaDevices.getUserMedia({
   audio: true
 }).then(stream => {
   console.log(user)
- 
+   socket.emit('addlist',user);
   console.log(user+"added")
   myVideoStream = stream;
   addVideoStream(myVideo, myVideoStream)
-   socket.emit('addlist',user);
+ 
 
   myPeer.on('call', call => {
     call.answer(myVideoStream)
