@@ -231,8 +231,8 @@ const setPlayVideo = () => {
   document.querySelector('.main__video_button').innerHTML = html;
 }
 
-const showParticipants=()=>{
-  var x = document.getElementById("participants");
+const showChats=()=>{
+  var x = document.getElementById("chats");
   //var y = document.getElementById("chats");
   if (x.style.display === "none") {
     x.style.display = "block";
